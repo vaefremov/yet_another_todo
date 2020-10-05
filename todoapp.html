@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Homework Assignment #8: Events</title>
+</head>
+
+<style>
+    .hidden {
+        display: none;
+    }
+    .horiz {
+        display: inline-block;
+    }
+    .error_msg {
+        color: red;
+    }
+    .todolist {
+        cursor: pointer;
+    }
+/* The Modal background */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgba(0,0,0,0.4); /* Black with opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: white;
+  margin: auto;
+  padding: 20px;
+  border: 2px solid black;
+  width: 50%;
+}
+
+/* The Close Button */
+.close {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}</style>
+
+<body>
+<header>
+    <div class="horiz">
+    Here the status of the application goes: title, sign-up or login buttons or user id
+    </div>
+    <div id="loginButtons" class="horiz">
+        <div class="horiz"><button onclick="displayLogInDialogue()">Log In</button></div>
+        <div class="horiz"><button onclick="displaySignUpDialogue()">Sign Up</button></div>
+    </div>
+
+    <div id="logoutButtons" class="horiz, hidden">
+        <div class="horiz"><button onclick="logOut()">Log Out</button></div>
+        <div class="horiz"><button onclick="accoutSettings()">Account settings</button></div>
+    </div>
+    <div>Here the short application description will be put</div>
+    <hr>
+</header>
+
+<div id="dashboard" class="hidden">
+<h1>Dashboard</h1>
+<ul>
+    <li>List #1</li>
+    <li>List #2</li>
+</ul>
+<button>New list</button>
+</div>
+
+<div id="todolist" class="hidden">
+    <h1>Todo list: <span id="name_todolist">List #1</span></h1>
+    <button onclick="renameTodoList()">Rename the current list</button>
+    <form id="rename_todolist_form" class="hidden">
+        <input id="newname_todolist" type="text" placeholder="Input a new name">
+        <button type="submit">Rename</button>
+    </form>
+    <ul>
+        <li><input type="checkbox">Item 1</li>
+        <li><input type="checkbox">Item 2</li>
+    </ul>
+    <button onclick="showDashboard()">Back to dashboard</button>
+    <button>Add item</button>
+    <button>Clear the done items</button>
+</div>
+
+<form id="signup_form" style="border:1px solid #ccc" class="hidden">
+    <div class="container">
+      <h1>Sign Up</h1>
+      <p>Please fill in this form to create an account.</p>
+      <hr>
+  
+      <label><b>First name</b></label>
+      <input id="firstname" type="text" placeholder="Enter first name" required>
+
+      <label><b>Last name</b></label>
+      <input id="lastname" type="text" placeholder="Enter last name" required>
+
+      <label><b>Email</b></label>
+      <input id="email" type="text" placeholder="Enter Email" required>
+  
+      <label for="psw"><b>Password</b></label>
+      <input id="password" type="password" placeholder="Enter Password" required>
+        
+      <label>
+        <input id="agree" type="checkbox" style="margin-bottom:15px"> I agree to the Terms of Use
+      </label>
+      
+      <div class="clearfix">
+        <button type="button" class="cancelbtn"  onclick="resetSignUpForm()">Cancel</button>
+        <button type="submit" class="signupbtn">Sign Up</button>
+      </div>
+    </div>
+  </form>
+
+  <form id="login_form" style="border:1px solid #ccc" class="hidden">
+    <div class="container">
+      <h1>Log In</h1>
+      <hr>
+  
+      <label><b>Email</b></label>
+      <input id="email_login" type="text" placeholder="Enter Email" required>
+  
+      <label for="psw"><b>Password</b></label>
+      <input id="password_login" type="password" placeholder="Enter Password" required>
+        
+      
+      <div class="clearfix">
+        <button type="button" class="cancelbtn"  onclick="resetLogInForm()">Cancel</button>
+        <button type="submit" class="signupbtn">Log In</button>
+      </div>
+    </div>
+  </form>
+  
+    <!-- The Error Dialogue -->
+    <div id="myModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p class="error_msg" id="message">Some text in the Modal...</p>
+        </div>
+    </div>
+  
+
+</body>
+<script>
+    let currentUserId = null; // ID of the currently logged in user
+
+    // Setting up event listeners
+    document.getElementById('signup_form').addEventListener('submit', submitSignUpForm)
+    document.getElementById('login_form').addEventListener('submit', submitLogInForm)
+    document.getElementById('rename_todolist_form').addEventListener('submit', submitRenameTodoList)
+
+    function displaySignUpDialogue() {
+        document.getElementById('signup_form').style.display = 'block'
+    }
+
+    function submitSignUpForm(e) {
+        e.preventDefault()
+        console.log("Trying to submit form", document.getElementById('agree').checked)
+        if (!document.getElementById('agree').checked) {
+            showErrorMessage('You must agree to the terms of use!')
+            return
+        }
+        const userData = {firstname: document.getElementById('firstname').value,
+            lastname: document.getElementById('lastname').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+        }
+        if (!createUser(userData)) {
+            showErrorMessage('Failed to create user (email is already used)!')
+            return
+        }
+        resetSignUpForm()
+        redrawAppHeader()
+    }
+
+    function resetSignUpForm() {
+        document.getElementById('signup_form').reset()
+        document.getElementById('signup_form').style.display = 'none'
+    }
+
+    function displayLogInDialogue() {
+        document.getElementById('login_form').style.display = 'block'
+    }
+
+    function submitLogInForm(e) {
+        e.preventDefault()
+        email = document.getElementById('email_login').value
+        password = document.getElementById('password_login').value
+        console.log('Login', email, password)
+        if (!isCredentialsRight(email, password)) {
+            showErrorMessage('Wrong email or password!')
+            return
+        }
+        resetLogInForm()
+        redrawAppHeader()
+    }
+
+    function resetLogInForm() {
+        document.getElementById('login_form').reset()
+        document.getElementById('login_form').style.display = 'none'
+    }
+
+    function logOut() {
+        currentUserId = null
+        redrawAppHeader()
+    }
+
+    function redrawAppHeader() {
+        if (currentUserId !== null) {
+            document.getElementById('loginButtons').style.display = 'none'
+            document.getElementById('logoutButtons').style.display = 'inline-block'
+            showDashboard()
+        } else {
+            document.getElementById('loginButtons').style.display = 'inline-block'
+            document.getElementById('logoutButtons').style.display = 'none'
+            document.getElementById('dashboard').style.display = 'none'
+            document.getElementById('todolist').style.display = 'none'
+        }
+    }
+
+    // Show dashboardfor the current user
+    function showDashboard() {
+        document.getElementById('todolist').style.display = 'none'
+        document.getElementById('dashboard').style.display = 'block'
+        const todos = ['List 1', 'List 2']
+        const dashboard = document.getElementById('dashboard').getElementsByTagName('ul')[0]
+        dashboard.innerHTML = ''
+        for (const i of todos) {
+            let item = document.createElement('li')
+            item.classList.add('todolist')
+            item.innerText = i
+            item.addEventListener('click', (ev) => {console.log('going to the list', showTodoList(ev.target.innerText))})
+            dashboard.appendChild(item)    
+        }
+    }
+
+    function showTodoList(listname) {
+        document.getElementById('dashboard').style.display = 'none'
+        document.getElementById('todolist').style.display = 'block'
+    }
+
+    function renameTodoList() {
+        document.getElementById('rename_todolist_form').style.display = 'block'
+    }
+
+    function submitRenameTodoList(ev) {
+        function isNewListNameOk(nm) {
+            return nm !== ''
+        }
+        ev.preventDefault()
+        const form = document.getElementById('rename_todolist_form')
+        const newname = document.getElementById('newname_todolist').value
+        console.log('Submitting list name', newname)
+        if (!isNewListNameOk(newname)) {
+            showErrorMessage('List name is not acceptable')
+            form.reset()
+            return
+        }
+        form.reset()
+        form.style.display = 'none'
+        document.getElementById('name_todolist').innerText = newname
+    }
+
+    function isCredentialsRight(email, password) {
+        if (email === password) {
+            return false
+        } else {
+            currentUserId = 1
+            return true
+        }
+    }
+
+    function createUser(userData) {
+        console.log(userData)
+        currentUserId = 1
+        return true;
+    }
+
+    function showErrorMessage(msg) {
+        let modal = document.getElementById("myModal");
+        let messageElt = document.getElementById('message')
+        messageElt.innerText = msg
+        modal.style.display = "block";
+        let closeElt = document.getElementsByClassName("close")[0]
+        closeElt.onclick = () => {document.getElementById("myModal").style.display = "none"}
+    }
+</script>
+</html>
