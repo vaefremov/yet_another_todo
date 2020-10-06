@@ -69,7 +69,7 @@
 
     <div id="logoutButtons" class="horiz, hidden">
         <div class="horiz"><button onclick="logOut()">Log Out</button></div>
-        <div class="horiz"><button onclick="accoutSettings()">Account settings</button></div>
+        <div class="horiz"><button onclick="accountSettings()">Account settings</button></div>
     </div>
     <div>Here the short application description will be put</div>
     <hr>
@@ -129,6 +129,34 @@
     </div>
   </form>
 
+  <form id="settings_form" style="border:1px solid #ccc" class="hidden">
+    <div class="container">
+      <h1>Account settings</h1>
+      <p>Please fill in this form to edit the account settings. Leave the
+          unchanged fields empty.
+      </p>
+      <hr>
+  
+      <label><b>First name</b></label>
+      <input id="firstname_settings" type="text" placeholder="Enter first name" required>
+
+      <label><b>Last name</b></label>
+      <input id="lastname_settings" type="text" placeholder="Enter last name" required>
+
+      <label><b>Email</b></label>
+      <input id="email_settings" type="text" placeholder="Enter Email" required>
+  
+      <label for="psw"><b>Password</b></label>
+      <input id="password_settings" type="password" placeholder="Enter Password" required>
+        
+      
+      <div class="clearfix">
+        <button type="button" class="cancelbtn"  onclick="resetSettingsForm()">Cancel</button>
+        <button type="submit" class="signupbtn">Save</button>
+      </div>
+    </div>
+  </form>
+
   <form id="login_form" style="border:1px solid #ccc" class="hidden">
     <div class="container">
       <h1>Log In</h1>
@@ -164,6 +192,7 @@
 
     // Setting up event listeners
     document.getElementById('signup_form').addEventListener('submit', submitSignUpForm)
+    document.getElementById('settings_form').addEventListener('submit', submitSettingsForm)
     document.getElementById('login_form').addEventListener('submit', submitLogInForm)
     document.getElementById('rename_todolist_form').addEventListener('submit', submitRenameTodoList)
 
@@ -194,6 +223,39 @@
     function resetSignUpForm() {
         document.getElementById('signup_form').reset()
         document.getElementById('signup_form').style.display = 'none'
+    }
+
+    function accountSettings() {
+        console.log('Edit account settings')
+        document.getElementById('todolist').style.display = 'none'
+        document.getElementById('dashboard').style.display = 'none'
+        document.getElementById('settings_form').style.display = 'block'
+    }
+
+    function submitSettingsForm(e) {
+        e.preventDefault()
+        let userData = {}
+        if (document.getElementById('firstname_settings').value)
+            userData.firstname = document.getElementById('firstname_settings').value
+        if (document.getElementById('lastname_settings').value)
+            userData.lastname = document.getElementById('lastname_settings').value
+        if (document.getElementById('email_settings').value)
+            userData.email = document.getElementById('email_settings').value
+        if (document.getElementById('password_settings').value)
+            userData.password = document.getElementById('password_settings').value
+        console.log('Submit settings', userData)
+        if (!isUserDataOk(userData)) {
+            showErrorMessage('Unable to update settings!')
+            return
+        }
+        resetSettingsForm()
+    }
+
+    function resetSettingsForm() {
+        console.log('Reset settings')
+        document.getElementById('settings_form').reset()
+        document.getElementById('settings_form').style.display = 'none'
+        showDashboard()
     }
 
     function displayLogInDialogue() {
@@ -292,6 +354,11 @@
         console.log(userData)
         currentUserId = 1
         return true;
+    }
+
+    function isUserDataOk(userData) {
+        console.log('Checking user data', userData)
+        return true
     }
 
     function showErrorMessage(msg) {
