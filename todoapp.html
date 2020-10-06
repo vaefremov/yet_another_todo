@@ -19,6 +19,10 @@
     .todolist {
         cursor: pointer;
     }
+
+    .done_item {
+        text-decoration: line-through;
+    }
 /* The Modal background */
 .modal {
   display: none; /* Hidden by default */
@@ -92,12 +96,16 @@
         <button type="submit">Rename</button>
     </form>
     <ul>
-        <li><input type="checkbox">Item 1</li>
-        <li><input type="checkbox">Item 2</li>
+        <li>Item 1</li>
+        <li class="done_item">Item 2</li>
     </ul>
+    <form id="add_todolist_form" class="hidden">
+        <input id="add_todolist" type="text" placeholder="Input a new todo item">
+        <button type="submit">Add item</button>
+    </form>
     <button onclick="showDashboard()">Back to dashboard</button>
-    <button>Add item</button>
-    <button>Clear the done items</button>
+    <button onclick="addTodoItem()">Add item</button>
+    <button>Clear the "done" items</button>
 </div>
 
 <form id="signup_form" style="border:1px solid #ccc" class="hidden">
@@ -138,16 +146,16 @@
       <hr>
   
       <label><b>First name</b></label>
-      <input id="firstname_settings" type="text" placeholder="Enter first name" required>
+      <input id="firstname_settings" type="text" placeholder="Enter first name">
 
       <label><b>Last name</b></label>
-      <input id="lastname_settings" type="text" placeholder="Enter last name" required>
+      <input id="lastname_settings" type="text" placeholder="Enter last name">
 
       <label><b>Email</b></label>
-      <input id="email_settings" type="text" placeholder="Enter Email" required>
+      <input id="email_settings" type="text" placeholder="Enter Email">
   
       <label for="psw"><b>Password</b></label>
-      <input id="password_settings" type="password" placeholder="Enter Password" required>
+      <input id="password_settings" type="password" placeholder="Enter Password">
         
       
       <div class="clearfix">
@@ -195,7 +203,7 @@
     document.getElementById('settings_form').addEventListener('submit', submitSettingsForm)
     document.getElementById('login_form').addEventListener('submit', submitLogInForm)
     document.getElementById('rename_todolist_form').addEventListener('submit', submitRenameTodoList)
-
+    document.getElementById('add_todolist_form').addEventListener('submit', submitAddTodoList)
     function displaySignUpDialogue() {
         document.getElementById('signup_form').style.display = 'block'
     }
@@ -341,6 +349,26 @@
         document.getElementById('name_todolist').innerText = newname
     }
 
+    function addTodoItem() {
+        document.getElementById('add_todolist_form').style.display = 'block'
+    }
+
+    function submitAddTodoList(ev) {
+        ev.preventDefault()
+        console.log('Adding todo item')
+        const newTodoItemText = document.getElementById('add_todolist').value
+        const todoList = document.getElementById('todolist').getElementsByTagName('ul')[0]
+        if (newTodoItemText) {
+            const item = document.createElement('li')
+            item.classList.add('todolist')
+            // item.classList.add('done_item')
+            item.innerText = newTodoItemText
+            todoList.appendChild(item)
+        }
+        document.getElementById('add_todolist_form').reset()
+        document.getElementById('add_todolist_form').style.display = 'none'
+    }
+
     function isCredentialsRight(email, password) {
         if (email === password) {
             return false
@@ -358,6 +386,9 @@
 
     function isUserDataOk(userData) {
         console.log('Checking user data', userData)
+        if (userData.email === undefined) {
+            return false
+        }
         return true
     }
 
