@@ -208,17 +208,19 @@
     }
 
     let currentUserId = null; // ID of the currently logged in user
-    let currentUserData = {
-        firstname: 'Vova',
-        lastname: 'Ivanov',
-        email: 'qq@aa.qq',
-        password: 'aaqq',
-        todoLists: [
-            new TodoList('List # 1', [new TodoListItem(false, "Item #1"), new TodoListItem(true, "Item #2")]),
-            new TodoList('List # 2', [new TodoListItem(true, "Item #1"), new TodoListItem(true, "Item #2")])
-        ]
-    }
+    let currentUserData = null
+    // {
+    //     firstname: 'Vova',
+    //     lastname: 'Ivanov',
+    //     email: 'qq@aa',
+    //     password: 'aaqq',
+    //     todoLists: [
+    //         new TodoList('List # 1', [new TodoListItem(false, "Item #1"), new TodoListItem(true, "Item #2")]),
+    //         new TodoList('List # 2', [new TodoListItem(true, "Item #1"), new TodoListItem(true, "Item #2")])
+    //     ]
+    // }
 
+    const appDataStorage = restoreDataFromLocalStorage()
     // Setting up event listeners
     document.getElementById('signup_form').addEventListener('submit', submitSignUpForm)
     document.getElementById('settings_form').addEventListener('submit', submitSettingsForm)
@@ -281,6 +283,7 @@
 
     function logOut() {
         currentUserId = null
+        saveDataToLocalStorage()
         redrawAppHeader()
     }
 
@@ -470,17 +473,26 @@
     }
 
     function isCredentialsRight(email, password) {
-        if (email === password) {
-            return false
-        } else {
-            currentUserId = 1
-            return true
+        for (k in appDataStorage) {
+            if (k === 'lastUserId')
+                continue;
+            if (appDataStorage[k].email === email && appDataStorage[k].password === password) {
+                currentUserId = k
+                currentUserData = appDataStorage[k]
+                return true
+            }
         }
+        return false
     }
 
     function createUser(userData) {
         console.log(userData)
-        currentUserId = 1
+        appDataStorage.lastUserId += 1
+        currentUserId = appDataStorage.lastUserId
+        userData.todoLists = []
+        currentUserData = userData
+        appDataStorage[currentUserId] = userData
+        saveDataToLocalStorage()
         return true;
     }
 
@@ -506,6 +518,21 @@
             }
         }
         return null
+    }
+
+    function restoreDataFromLocalStorage() {
+        tmp = localStorage.getItem('todoAppData')
+        let res = {
+                lastUserId: 0
+            }
+        if (tmp !== null) {
+            res = JSON.parse(tmp)
+        }
+        return res
+    }
+
+    function saveDataToLocalStorage() {
+        localStorage.setItem('todoAppData', JSON.stringify(appDataStorage))
     }
 
     function showErrorMessage(msg) {
