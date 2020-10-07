@@ -302,11 +302,16 @@
     }
 
     // Account settings stuff
+
+    // Show current account settings
     function accountSettings() {
         console.log('Edit account settings')
         hideDashboard()
         document.getElementById('todolist').style.display = 'none'
         document.getElementById('settings_form').style.display = 'block'
+        document.getElementById('firstname_settings').value = currentUserData.firstname
+        document.getElementById('lastname_settings').value = currentUserData.lastname
+        document.getElementById('email_settings').value = currentUserData.email
     }
 
     function hideSettingsForm() {
@@ -329,6 +334,7 @@
             showErrorMessage('Unable to update settings!')
             return
         }
+        saveUserSettings(userData)
         resetSettingsForm()
     }
 
@@ -502,6 +508,15 @@
             return false
         }
         return true
+    }
+
+    // update current user data and save the whole app data to localStorage
+    function saveUserSettings(userData) {
+        Object.keys(userData).forEach((k) => {
+            currentUserData[k] = userData[k]
+          }
+        )
+        saveDataToLocalStorage()
     }
 
     function todoListsNames() {
