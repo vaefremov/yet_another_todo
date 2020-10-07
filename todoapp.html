@@ -67,7 +67,7 @@
 <body>
 <header>
     <div class="horiz">
-    Here the status of the application goes: title, sign-up or login buttons or user id
+    TODO List App
     </div>
     <div id="loginButtons" class="horiz">
         <div class="horiz"><button onclick="displayLogInDialogue()">Log In</button></div>
@@ -78,7 +78,7 @@
         <div class="horiz"><button onclick="logOut()">Log Out</button></div>
         <div class="horiz"><button onclick="accountSettings()">Account settings</button></div>
     </div>
-    <div>Here the short application description will be put</div>
+    <div>Yet another ToDo list application.</div>
     <hr>
 </header>
 
@@ -102,11 +102,10 @@
     </ul>
     <form id="add_todolist_form" class="hidden inline_form">
         <input id="add_todolist" type="text" placeholder="Input a new todo item">
-        <br>
         <button type="submit">Add item</button>
     </form>
     <button onclick="saveTodoList(); showDashboard()">Back to dashboard & save</button>
-    <button onclick="addTodoItem()">Add item</button>
+    <button onclick="addTodoItem()">New item</button>
 </div>
 
 <form id="signup_form" class="hidden inline_form">
