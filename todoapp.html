@@ -128,7 +128,7 @@
       <input id="password" type="password" placeholder="Enter Password" required>
         
       <label>
-        <input id="agree" type="checkbox" style="margin-bottom:15px"> I agree to the Terms of Use
+        <input id="agree" type="checkbox" style="margin-bottom:15px"> I agree with the Terms of Use
       </label>
       
       <div class="clearfix">
@@ -272,6 +272,9 @@
             showErrorMessage('Wrong email or password!')
             return
         }
+        currentUserId = getIdByEmail(email)
+        currentUserData = appDataStorage[currentUserId]
+
         resetLogInForm()
         redrawAppHeader()
     }
@@ -331,7 +334,7 @@
             userData.password = document.getElementById('password_settings').value
         console.log('Submit settings', userData)
         if (!isUserDataOk(userData)) {
-            showErrorMessage('Unable to update settings!')
+            showErrorMessage('Unable to update settings (email in use)!')
             return
         }
         saveUserSettings(userData)
@@ -483,16 +486,30 @@
             if (k === 'lastUserId')
                 continue;
             if (appDataStorage[k].email === email && appDataStorage[k].password === password) {
-                currentUserId = k
-                currentUserData = appDataStorage[k]
                 return true
             }
         }
         return false
     }
 
+    function getIdByEmail(email) {
+        for (k in appDataStorage) {
+            if (k === 'lastUserId')
+                continue;
+            if (appDataStorage[k].email === email) {
+                return k
+            }
+        }
+        return null
+    }
+
+    // Create new user. The email should not be in use
     function createUser(userData) {
         console.log(userData)
+        // check if the email specified in the data is already in use
+        if (getIdByEmail(userData.email) !== null) {
+            return false
+        }
         appDataStorage.lastUserId += 1
         currentUserId = appDataStorage.lastUserId
         userData.todoLists = []
@@ -502,9 +519,13 @@
         return true;
     }
 
+    // check if the provided email address coincides with the email of the current user
+    // or is not used by other (useful for updating account settings)
     function isUserDataOk(userData) {
         console.log('Checking user data', userData)
-        if (userData.email === undefined) {
+        // check if the email specified in the data is already in use
+        const id = getIdByEmail(userData.email)
+        if (id !== currentUserId &&  id !== null) {
             return false
         }
         return true
