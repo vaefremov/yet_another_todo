@@ -85,14 +85,12 @@
 <div id="dashboard" class="hidden">
 <h1>Dashboard</h1>
 <ul>
-    <li>List #1</li>
-    <li>List #2</li>
 </ul>
-<button>New list</button>
+<button onclick="createNewTodoList()">New list</button>
 </div>
 
 <div id="todolist" class="hidden">
-    <h1>Todo list: <span id="name_todolist">List #1</span></h1>
+    <h1>Todo list: <span id="name_todolist">Not set!</span></h1>
     <form id="rename_todolist_form" class="hidden inline_form">
         <input id="newname_todolist" type="text" placeholder="Input a new name">
         <br>
@@ -101,17 +99,14 @@
     </form>
     <button onclick="renameTodoList()">Rename the current list</button>
     <ul>
-        <li>Item 1</li>
-        <li class="done_item">Item 2</li>
     </ul>
     <form id="add_todolist_form" class="hidden inline_form">
         <input id="add_todolist" type="text" placeholder="Input a new todo item">
         <br>
         <button type="submit">Add item</button>
     </form>
-    <button onclick="showDashboard()">Back to dashboard</button>
+    <button onclick="saveTodoList(); showDashboard()">Back to dashboard & save</button>
     <button onclick="addTodoItem()">Add item</button>
-    <button>Clear the "done" items</button>
 </div>
 
 <form id="signup_form" class="hidden inline_form">
@@ -202,7 +197,27 @@
 
 </body>
 <script>
+    function TodoList(name, items) {
+        this.name = name
+        this.items = items
+    }
+
+    function TodoListItem(isDone, value) {
+        this.done = isDone
+        this.value = value
+    }
+
     let currentUserId = null; // ID of the currently logged in user
+    let currentUserData = {
+        firstname: 'Vova',
+        lastname: 'Ivanov',
+        email: 'qq@aa.qq',
+        password: 'aaqq',
+        todoLists: [
+            new TodoList('List # 1', [new TodoListItem(false, "Item #1"), new TodoListItem(true, "Item #2")]),
+            new TodoList('List # 2', [new TodoListItem(true, "Item #1"), new TodoListItem(true, "Item #2")])
+        ]
+    }
 
     // Setting up event listeners
     document.getElementById('signup_form').addEventListener('submit', submitSignUpForm)
@@ -210,7 +225,9 @@
     document.getElementById('login_form').addEventListener('submit', submitLogInForm)
     document.getElementById('rename_todolist_form').addEventListener('submit', submitRenameTodoList)
     document.getElementById('add_todolist_form').addEventListener('submit', submitAddTodoList)
+
     function displaySignUpDialogue() {
+        resetLogInForm()
         document.getElementById('signup_form').style.display = 'block'
     }
 
@@ -239,40 +256,8 @@
         document.getElementById('signup_form').style.display = 'none'
     }
 
-    function accountSettings() {
-        console.log('Edit account settings')
-        document.getElementById('todolist').style.display = 'none'
-        document.getElementById('dashboard').style.display = 'none'
-        document.getElementById('settings_form').style.display = 'block'
-    }
-
-    function submitSettingsForm(e) {
-        e.preventDefault()
-        let userData = {}
-        if (document.getElementById('firstname_settings').value)
-            userData.firstname = document.getElementById('firstname_settings').value
-        if (document.getElementById('lastname_settings').value)
-            userData.lastname = document.getElementById('lastname_settings').value
-        if (document.getElementById('email_settings').value)
-            userData.email = document.getElementById('email_settings').value
-        if (document.getElementById('password_settings').value)
-            userData.password = document.getElementById('password_settings').value
-        console.log('Submit settings', userData)
-        if (!isUserDataOk(userData)) {
-            showErrorMessage('Unable to update settings!')
-            return
-        }
-        resetSettingsForm()
-    }
-
-    function resetSettingsForm() {
-        console.log('Reset settings')
-        document.getElementById('settings_form').reset()
-        document.getElementById('settings_form').style.display = 'none'
-        showDashboard()
-    }
-
     function displayLogInDialogue() {
+        resetSignUpForm()
         document.getElementById('login_form').style.display = 'block'
     }
 
@@ -307,16 +292,56 @@
         } else {
             document.getElementById('loginButtons').style.display = 'inline-block'
             document.getElementById('logoutButtons').style.display = 'none'
-            document.getElementById('dashboard').style.display = 'none'
             document.getElementById('todolist').style.display = 'none'
+            hideDashboard()
+            hideSettingsForm()
         }
     }
 
+    // Account settings stuff
+    function accountSettings() {
+        console.log('Edit account settings')
+        hideDashboard()
+        document.getElementById('todolist').style.display = 'none'
+        document.getElementById('settings_form').style.display = 'block'
+    }
+
+    function hideSettingsForm() {
+        document.getElementById('settings_form').style.display = 'none'
+    }
+
+    function submitSettingsForm(e) {
+        e.preventDefault()
+        let userData = {}
+        if (document.getElementById('firstname_settings').value)
+            userData.firstname = document.getElementById('firstname_settings').value
+        if (document.getElementById('lastname_settings').value)
+            userData.lastname = document.getElementById('lastname_settings').value
+        if (document.getElementById('email_settings').value)
+            userData.email = document.getElementById('email_settings').value
+        if (document.getElementById('password_settings').value)
+            userData.password = document.getElementById('password_settings').value
+        console.log('Submit settings', userData)
+        if (!isUserDataOk(userData)) {
+            showErrorMessage('Unable to update settings!')
+            return
+        }
+        resetSettingsForm()
+    }
+
+    function resetSettingsForm() {
+        console.log('Reset settings')
+        document.getElementById('settings_form').reset()
+        hideSettingsForm()
+        showDashboard()
+    }
+
+   
     // Show dashboardfor the current user
     function showDashboard() {
-        document.getElementById('todolist').style.display = 'none'
+        hideTodoList()
         document.getElementById('dashboard').style.display = 'block'
-        const todos = ['List 1', 'List 2']
+        const todos = todoListsNames()
         const dashboard = document.getElementById('dashboard').getElementsByTagName('ul')[0]
         dashboard.innerHTML = ''
         for (const i of todos) {
@@ -328,9 +353,54 @@
         }
     }
 
-    function showTodoList(listname) {
+    function hideDashboard() {
         document.getElementById('dashboard').style.display = 'none'
+    }
+
+    function createNewTodoList() {
+        function makeUniqueListName() {
+            let name = 'To be renamed'
+            console.log(todoListsNames(), name in todoListsNames())
+            while (todoListsNames().includes(name)) {
+                name += '!'
+            }
+            return name
+        }
+        const uniqueName = makeUniqueListName()
+        currentUserData.todoLists.push(new TodoList(uniqueName, []))
+        showTodoList(uniqueName)
+    }
+
+    function showTodoList(listName) {
+        hideDashboard()
         document.getElementById('todolist').style.display = 'block'
+        document.getElementById('name_todolist').innerText = listName
+        currentTodoList = findTodoListByName(listName).items
+        const todoList = document.getElementById('todolist').getElementsByTagName('ul')[0]
+        todoList.innerHTML = ''
+        for (const item of currentTodoList) {
+            const elt = document.createElement('li')
+            elt.classList.add('todolist')
+            elt.addEventListener('click', (ev) => {ev.target.classList.toggle('done_item'); saveTodoList()})
+            if (item.done) {
+                elt.classList.add('done_item')
+            }
+            elt.innerText = item.value
+            todoList.appendChild(elt)
+        }
+    }
+
+    function saveTodoList() {
+        const listName = document.getElementById('name_todolist').innerText
+        const todoList = document.getElementById('todolist').getElementsByTagName('ul')[0]
+        let res = []
+        for (el of todoList.getElementsByTagName('li')) {
+            res.push(new TodoListItem(el.classList.contains('done_item'), el.innerText))
+        }
+        currentList = findTodoListByName(listName)
+        console.log(listName, currentList)
+        currentList.items = res
+        console.log(JSON.stringify(currentList))
     }
 
     function renameTodoList() {
@@ -339,10 +409,15 @@
 
     function submitRenameTodoList(ev) {
         function isNewListNameOk(nm) {
+            for (l of currentUserData.todoLists) {
+                if (nm === l.name)
+                    return false
+            }
             return nm !== ''
         }
         ev.preventDefault()
         const form = document.getElementById('rename_todolist_form')
+        const currentName = document.getElementById('name_todolist').innerText
         const newname = document.getElementById('newname_todolist').value
         console.log('Submitting list name', newname)
         if (!isNewListNameOk(newname)) {
@@ -352,12 +427,25 @@
         }
         form.reset()
         form.style.display = 'none'
+        const currentList = findTodoListByName(currentName)
+        currentList.name = newname
         document.getElementById('name_todolist').innerText = newname
+    }
+
+    function hideTodoList() {
+        hideAddTodoListForm()
+        hideRenameTodoListForm()
+        document.getElementById('todolist').style.display = 'none'
     }
 
     function hideRenameTodoListForm() {
         document.getElementById('rename_todolist_form').reset()
         document.getElementById('rename_todolist_form').style.display = 'none'
+    }
+
+    function hideAddTodoListForm() {
+        document.getElementById('add_todolist_form').reset()
+        document.getElementById('add_todolist_form').style.display = 'none'
     }
 
     function addTodoItem() {
@@ -372,12 +460,13 @@
         if (newTodoItemText) {
             const item = document.createElement('li')
             item.classList.add('todolist')
-            // item.classList.add('done_item')
+            item.addEventListener('click', (ev) => {ev.target.classList.toggle('done_item'); saveTodoList()})
             item.innerText = newTodoItemText
             todoList.appendChild(item)
         }
         document.getElementById('add_todolist_form').reset()
         document.getElementById('add_todolist_form').style.display = 'none'
+        saveTodoList()
     }
 
     function isCredentialsRight(email, password) {
@@ -401,6 +490,22 @@
             return false
         }
         return true
+    }
+
+    function todoListsNames() {
+        const todos = []
+        currentUserData.todoLists.forEach((i) => {todos.push(i.name)})
+        return todos
+    }
+
+    function findTodoListByName(listName) {
+        for (l of currentUserData.todoLists) {
+            console.log('findTodoListByName', l)
+            if (l.name === listName) {
+                return l
+            }
+        }
+        return null
     }
 
     function showErrorMessage(msg) {
