@@ -209,17 +209,7 @@
 
     let currentUserId = null; // ID of the currently logged in user
     let currentUserData = null
-    // {
-    //     firstname: 'Vova',
-    //     lastname: 'Ivanov',
-    //     email: 'qq@aa',
-    //     password: 'aaqq',
-    //     todoLists: [
-    //         new TodoList('List # 1', [new TodoListItem(false, "Item #1"), new TodoListItem(true, "Item #2")]),
-    //         new TodoList('List # 2', [new TodoListItem(true, "Item #1"), new TodoListItem(true, "Item #2")])
-    //     ]
-    // }
-
+    
     const appDataStorage = restoreDataFromLocalStorage()
     // Setting up event listeners
     document.getElementById('signup_form').addEventListener('submit', submitSignUpForm)
