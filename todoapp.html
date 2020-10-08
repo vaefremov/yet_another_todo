@@ -346,14 +346,10 @@
         document.getElementById('dashboard').style.display = 'block'
         const todos = todoListsNames()
         const dashboard = document.getElementById('dashboard').getElementsByTagName('ul')[0]
-        dashboard.innerHTML = ''
-        for (const i of todos) {
-            let item = document.createElement('li')
-            item.classList.add('todolist')
-            item.innerText = i
-            item.addEventListener('click', (ev) => {console.log('going to the list', showTodoList(ev.target.innerText))})
-            dashboard.appendChild(item)    
-        }
+        dashboard.innerHTML = `${todos.map(el => `<li class="todolist">${el}</li>`).join('')}`
+        Array.from(dashboard.getElementsByTagName('li')).forEach((item) => {
+                item.addEventListener('click', (ev) => {showTodoList(ev.target.innerText)})
+            })
     }
 
     function hideDashboard() {
@@ -380,17 +376,10 @@
         document.getElementById('name_todolist').innerText = listName
         currentTodoList = findTodoListByName(listName).items
         const todoList = document.getElementById('todolist').getElementsByTagName('ul')[0]
-        todoList.innerHTML = ''
-        for (const item of currentTodoList) {
-            const elt = document.createElement('li')
-            elt.classList.add('todolist')
-            elt.addEventListener('click', (ev) => {ev.target.classList.toggle('done_item'); saveTodoList()})
-            if (item.done) {
-                elt.classList.add('done_item')
-            }
-            elt.innerText = item.value
-            todoList.appendChild(elt)
-        }
+        todoList.innerHTML = `${currentTodoList.map((item) => `<li class="todolist ${item.done?'done_item':''}">${item.value}</li>`).join('')}`
+        Array.from(todoList.getElementsByTagName('li')).forEach((elt) => {
+            elt.addEventListener('click', (ev) => {ev.target.classList.toggle('done_item')})
+        })
     }
 
     function saveTodoList() {
